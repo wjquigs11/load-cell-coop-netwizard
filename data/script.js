@@ -1,5 +1,8 @@
-// Get current sensor readings when the page loads  
-window.addEventListener('load', getReadings);
+// Get current sensor readings and send browser time when the page loads
+window.addEventListener('load', function() {
+  getReadings();
+  sendBrowserTime();
+});
 
 // Get container and adjust gauge size 
 var container = document.getElementById('coop-card');
@@ -71,6 +74,38 @@ function getReadings(){
   }; 
   xhr.open("GET", "/readings", true);
   xhr.send();
+}
+
+// Function to send the browser's local time to the server
+function sendBrowserTime() {
+  // Get current browser time
+  const now = new Date();
+  
+  // Format the time data
+  const timeData = {
+    timestamp: now.getTime(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    offset: now.getTimezoneOffset(),
+    localTime: now.toLocaleString(),
+    isoString: now.toISOString()
+  };
+  
+  // Send the time data to the server
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      console.log("Browser time sent to server");
+    }
+  };
+  xhr.open("POST", "/browsertime", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify(timeData));
+  
+  // Display local time on the page if there's a time element
+  const timeElement = document.getElementById('local-time');
+  if (timeElement) {
+    timeElement.textContent = now.toLocaleString();
+  }
 }
 
 if (!!window.EventSource) {

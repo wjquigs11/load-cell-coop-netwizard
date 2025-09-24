@@ -18,7 +18,7 @@ String formatMacAddress(const String& macAddress) {
   return result;
 }
 
-String commandList[] = {"format", "restart", "ls", "hostname", "status", "wificonfig", "conslog", "log (on/off)", "note", "conslog (close/rm/open)", "timer (seconds)", "tare"};
+String commandList[] = {"format", "restart", "ls", "hostname", "status", "wificonfig", "conslog", "log (on/off)", "note", "conslog (close/rm/open)", "timer (seconds)", "empty", "full"};
 #define ASIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 String words[10]; // Assuming a maximum of 10 words
 
@@ -130,11 +130,16 @@ void WebSerialonMessage(uint8_t *data, size_t len) {
       }
       return;
     }
-    if (words[i].startsWith("tare")) {
-      refreshOffsetValueAndSaveToPrefs();
-      log::toAll("tare");
+    if (words[i].startsWith("empty")) {
+      configTare("empty");
+      log::toAll("empty calibration set");
       return;
-    } 
+    }
+    if (words[i].startsWith("full")) {
+      configTare("full");
+      log::toAll("full calibration set");
+      return;
+    }
     log::toAll("Unknown command: " + words[i]);
   }
   for (int i=0; i<wordCount; i++) words[i] = String();

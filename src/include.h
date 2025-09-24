@@ -41,8 +41,10 @@ extern File consLog;
 
 // weight value from load cell
 extern float loadcell;
+extern long empty_offset;
+extern long full_offset;
 
-void refreshOffsetValueAndSaveToPrefs();
+void configTare(const String& type);
 
 // Timer variables
 #define DEFDELAY 1000

@@ -39,18 +39,27 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 unsigned long t = 0;
 float calibrationValue=1.0; // calibration value (see example file "Calibration.ino")
 float loadcell=0.0;
-#define FULL -420000 // load cell reading at full feeder (remember it's in tension so "reverse")
-#define EMPTY 0 // should be close to zero because I tare'd with empty feeder hanging
+long empty_offset = 0; // offset value for empty feeder
+long full_offset = -420000; // offset value for full feeder (remember it's in tension so "reverse")
 
-// zero offset value (tare), calculate and save to preferences:
-void refreshOffsetValueAndSaveToPrefs() {
+// Configure tare offset values, calculate and save to preferences:
+void configTare(const String& type) {
   long _offset = 0;
-  log::toAll("Calculating tare offset value...");
+  log::toAll("Calculating " + type + " offset value...");
   LoadCell.tare(); // calculate the new tare / zero offset value (blocking)
   _offset = LoadCell.getTareOffset(); // get the new tare / zero offset value
-  preferences.putLong("tareoffset",_offset);
-  LoadCell.setTareOffset(_offset); // set value as library parameter (next restart it will be read from preferences)
-  log::toAll("New tare offset value:" + String(_offset));
+  
+  if (type == "empty") {
+    empty_offset = _offset;
+    preferences.putLong("empty_offset", _offset);
+    log::toAll("New empty offset value: " + String(_offset));
+  } else if (type == "full") {
+    full_offset = _offset;
+    preferences.putLong("full_offset", _offset);
+    log::toAll("New full offset value: " + String(_offset));
+  }
+  
+  LoadCell.setTareOffset(_offset); // set value as library parameter
 }
 
 void setup() {
@@ -86,26 +95,6 @@ void setup() {
   LoadCell.begin();
   //LoadCell.setReverseOutput();
 
-  //restore the zero offset value from preferences:
-  long tare_offset = 0;
-  tare_offset = preferences.getLong("tareoffset",0);
-  Serial.printf(", loaded tare offset value %0.2ld\n", tare_offset);
-  LoadCell.setTareOffset(tare_offset);
-  // set this to false if the value has been resored from preferences
-  // set to true if you want to tare
-  boolean _tare = false; 
-  unsigned long stabilizingtime = 2000; // precision right after power-up can be improved by adding a few seconds of stabilizing time
-  LoadCell.start(stabilizingtime, _tare);
-  if (LoadCell.getTareTimeoutFlag()) {
-    Serial.println("Timeout, check MCU>HX711 wiring and pin designations");
-    while (1);
-  }
-  else {
-    LoadCell.setCalFactor(calibrationValue); // set calibration value (float)
-    Serial.println("Startup is complete");
-  }
-  LoadCell.setSamplesInUse(25);
-  log::toAll("load cell samples: " + String(LoadCell.getSamplesInUse()));
 #ifdef WIFI
   bool doubleReset = preferences.getBool("DRD", false);
   preferences.putBool("DRD", true);
@@ -155,6 +144,29 @@ void setup() {
     }
   }
 #endif // WIFI
+
+  //restore the offset values from preferences:
+  empty_offset = preferences.getLong("empty_offset", 0);
+  full_offset = preferences.getLong("full_offset", -420000);
+  log::toAll("loaded empty offset value " + String(empty_offset));
+  log::toAll("loaded full offset value " + String(full_offset));
+  LoadCell.setTareOffset(empty_offset);
+  // set this to false if the value has been resored from preferences
+  // set to true if you want to tare
+  boolean _tare = false; 
+  unsigned long stabilizingtime = 2000; // precision right after power-up can be improved by adding a few seconds of stabilizing time
+  LoadCell.start(stabilizingtime, _tare);
+  if (LoadCell.getTareTimeoutFlag()) {
+    log::toAll("Timeout, check MCU>HX711 wiring and pin designations");
+    while (1);
+  }
+  else {
+    LoadCell.setCalFactor(calibrationValue); // set calibration value (float)
+    log::toAll("load cell startup is complete");
+  }
+  LoadCell.setSamplesInUse(25);
+  log::toAll("load cell samples: " + String(LoadCell.getSamplesInUse()));
+
   consLog.flush();
 }
 
@@ -192,7 +204,7 @@ void loop() {
     }
     if (newDataReady) {
       float raw = LoadCell.getData();
-      loadcell = map((long)raw,EMPTY,FULL,0,100);
+      loadcell = map((long)raw, empty_offset, full_offset, 0, 100);
       newDataReady = false;
       log::toAll("[" + String(now) + "] raw: " + String(raw) + " scaled: " + String(loadcell,0));
 #if WIFI
@@ -224,8 +236,10 @@ void loop() {
     if (input.length() > 0) {
       Serial.print("Received: ");
       Serial.println(input);
-      if (input == "tare")
-        refreshOffsetValueAndSaveToPrefs();
+      if (input == "empty")
+        configTare("empty");
+      else if (input == "full")
+        configTare("full");
     }
   }
 }

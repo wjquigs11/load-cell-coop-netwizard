@@ -92,6 +92,13 @@ canvas {
   display: block;
 }
 
+.time-display {
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 15px;
+  text-align: center;
+}
+
 /* Container for the gauge to ensure proper sizing and prevent cutoff */
 .gauge-container {
   width: 100%;

@@ -6,6 +6,7 @@ AsyncEventSource events("/events");
 AsyncWebSocket ws("/ws");
 bool serverStarted;
 JsonDocument readings;
+JsonDocument browserTimeData;
 String host = "coopfeederBETA";
 
 String getSensorReadings() {
@@ -70,9 +71,13 @@ void startWebServer() {
       response = "change web timer to " + String(timerDelay);
       log::toAll(response);
       preferences.putInt("timerdelay",timerDelay); 
-    } else if (request->hasParam("tare")) {
-      refreshOffsetValueAndSaveToPrefs();
-      response = "tare successful";
+    } else if (request->hasParam("empty")) {
+      configTare("empty");
+      response = "empty calibration successful";
+      log::toAll(response);
+    } else if (request->hasParam("full")) {
+      configTare("full");
+      response = "full calibration successful";
       log::toAll(response);
     }
     request->send(200, "text/plain", response.c_str());
@@ -85,6 +90,37 @@ void startWebServer() {
     log::toAll("Weight request: " + loadcellStr);
     request->send(200, "text/plain", loadcellStr);
     loadcellStr = String();
+  });
+
+  // Endpoint to receive browser time
+  server.on("/browsertime", HTTP_POST, [](AsyncWebServerRequest *request) {
+    // Just acknowledge the request
+    request->send(200, "text/plain", "Time received");
+  }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+    // Handle the POST data
+    if (len) {
+      data[len] = 0; // Null terminate the data
+      String jsonData = String((char*)data);
+      
+      // Parse the JSON data
+      DeserializationError error = deserializeJson(browserTimeData, jsonData);
+      
+      if (!error) {
+        // Log the received time data
+        String localTime = browserTimeData["localTime"].as<String>();
+        String timezone = browserTimeData["timezone"].as<String>();
+        int offset = browserTimeData["offset"].as<int>();
+        
+        log::toAll("Browser time received: " + localTime);
+        log::toAll("Browser timezone: " + timezone);
+        log::toAll("Browser UTC offset (minutes): " + String(offset));
+        
+        // Store the time data in preferences if needed
+        // preferences.putString("browserTimezone", timezone);
+      } else {
+        log::toAll("Error parsing browser time JSON");
+      }
+    }
   });
 
   events.onConnect([](AsyncEventSourceClient *client){
