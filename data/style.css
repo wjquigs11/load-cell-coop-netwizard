@@ -1,0 +1,117 @@
+html {
+  font-family: Arial, Helvetica, sans-serif; 
+  display: inline-block; 
+  text-align: center;
+}
+h1 {
+  font-size: 1.8rem; 
+  color: white;
+}
+p { 
+  font-size: 1.4rem;
+}
+.topnav { 
+  overflow: hidden; 
+  background-color: #0A1128;
+}
+body {  
+  margin: 0;
+}
+.reading { 
+  font-size: 2.8rem; 
+}
+
+.content {
+  padding: 5%;
+  text-align: center;
+}
+.card-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  justify-items: center;
+}
+.card {
+  background-color: white;
+  box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  overflow: visible;
+  box-sizing: border-box;
+  min-height: 350px;
+}
+.card-title { 
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #034078
+}
+
+.button {
+  background-color: #F44336;
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 18px;
+  border-radius: 4px;
+  width: 20%;
+}
+
+.multibutton {
+  background-color: #F44336;
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 18px;
+  border-radius: 4px;
+  width: 20%;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  margin: 0.25 em;
+}
+
+.button-row button {
+  flex: 1;
+  margin: 0.25em;
+}
+canvas {
+  max-width: 100%;
+  height: auto;
+  margin: 20px;
+  display: block;
+}
+
+/* Container for the gauge to ensure proper sizing and prevent cutoff */
+.gauge-container {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  position: relative;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+}
+
+/* Ensure the gauge canvas has enough space */
+#gauge-coop {
+  width: 100%;
+  height: auto;
+  max-width: 300px;
+}
+
+
