@@ -43,6 +43,7 @@ Hanging the feeder in the coop helps to discourage pests (although rats can cert
    - PlatformIO → Build Filesystem Image
    - PlatformIO → Upload Filesystem Image
 4. Build and upload the firmware to your ESP32
+- Note that the executable is fairly large; almost 4MB, so you may want to comment out definitions in platformio.ini if you don't need e.g. WebSerial. ElegantOTA is commented out but available if you modify and want to update the code without many trips to the coop :-)
 
 ## First-Time Setup
 
