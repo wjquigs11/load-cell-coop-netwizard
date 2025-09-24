@@ -21,12 +21,6 @@ This repo uses the excellent WebSerial and NetWizard libraries from ayusharma, a
 File consLog;
 Preferences preferences;
 
-#ifdef WIFI
-// Define NTP Client to get time
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
-#endif
-
 bool wifiEnabled = false;
 int timerDelay = 1000;
 unsigned long lastTime = 0;
@@ -209,15 +203,13 @@ void loop() {
       log::toAll("[" + String(now) + "] raw: " + String(raw) + " scaled: " + String(loadcell,0));
 #if WIFI
       readings["loadcell"] = String(loadcell);
-      // check time every hour
-      if (now - lastTimeTime > 3600000 || lastTimeTime == 0) {
-        if (WiFi.status() == WL_CONNECTED) {
-          lastTimeTime = now;
-          //log::toAll(WiFi.SSID());
-          timeClient.update();
-          log::toAll(timeClient.getFormattedTime());      
-        }
+      
+      // Calculate current time based on browser timestamp plus elapsed time
+      if (updateTime > 0) {
+        lastUpdate = updateTime + (now - lastEventTime);
+        readings["lastUpdate"] = String(lastUpdate);
       }
+      
       events.send(getSensorReadings().c_str(),"new_readings" ,millis());
 #endif
       consLog.flush();

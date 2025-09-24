@@ -1,10 +1,12 @@
 # Load Cell Chicken Coop Feeder Gauge
 
-A smart ESP32-based monitoring system for chicken coop feeders that measures the weight of feed using a load cell and provides a web interface to track feed levels.
+ESP32-based monitoring system for chicken coop feeders that measures the weight of feed using a load cell and provides a web interface to track feed levels.
 
 ## Overview
 
 This project uses an ESP32 microcontroller connected to a load cell via an HX711 ADC to monitor the weight of a chicken feeder. The system provides a web interface with a gauge visualization showing the current feed level as a percentage. The project includes WiFi connectivity with a captive portal for easy setup, OTA updates, and a WebSerial interface for debugging and configuration.
+
+Hanging the feeder in the coop helps to discourage pests (although rats can certainly jump up onto the feeder if they're really motivated).
 
 ## Features
 
@@ -18,14 +20,12 @@ This project uses an ESP32 microcontroller connected to a load cell via an HX711
 
 ## Hardware Requirements
 
-- ESP32 development board (ESP32-DOIT-DEVKIT-V1) - [Amazon Link](https://www.amazon.com/Development-Bluetooth-Microcontroller-ESP-WROOM-32-Breakout/dp/B0C8DBN29X/ref=sr_1_6)
+- ESP32 development board (ESP32-DOIT-DEVKIT-V1) - sometimes a screw terminal board is easiest to use [Amazon Link](https://www.amazon.com/Development-Bluetooth-Microcontroller-ESP-WROOM-32-Breakout/dp/B0C8DBN29X/ref=sr_1_6)
 - [HX711 load cell amplifier](https://www.sparkfun.com/products/13879)
 - [Load cell (weight sensor)](https://www.sparkfun.com/products/14151)
-I had a bar load cell from another project. I fixed one end to a piece of flat fiberglass bar (and old sail batten), and clamped it in the coop. The feeder hangs from a split ring on the other end of the bar. The hanging-style load cell is probably easier to install.
 - Power supply
 - Mounting hardware for the load cell
 
-<img src="images/feeder.jpg" alt="load cell" width="50%">
 <img src="images/bar.webp" alt="bar load cell" width="50%">
 <img src="images/hang.webp" alt="hanging load cell" width="50%">
 
@@ -58,6 +58,10 @@ I had a bar load cell from another project. I fixed one end to a piece of flat f
    - Browse to `http://coopfeeder.local/config?full` or
    - Use WebSerial and enter the command `full`
   Your specific values will be saved in flash on the ESP32
+
+  I had a bar load cell from another project. I fixed one end to a piece of flat fiberglass bar (and old sail batten), and clamped it in the coop. The feeder hangs from a split ring on the other end of the bar. The hanging-style load cell is probably easier to install.
+
+  <img src="images/feeder.jpg" alt="load cell" width="50%">
 
 ## Web Interface
 
@@ -111,9 +115,9 @@ To reset the WiFi configuration and return to the captive portal setup:
 - [ElegantOTA](https://github.com/ayushsharma82/ElegantOTA)
 - [NetWizard](https://github.com/ayushsharma82/NetWizard)
 - [WebSerialPro](https://github.com/ayushsharma82/WebSerial)
-- [NTPClient (3.2.1)](https://github.com/arduino-libraries/NTPClient)
 - [ArduinoJson (7.2.0)](https://github.com/bblanchon/ArduinoJson)
 - [HX711_ADC](https://github.com/olkal/HX711_ADC)
+- [gauges](https://github.com/bernii/gauge.js)
 
 ## Logs
 
@@ -126,10 +130,6 @@ A console log is stored on the SPIFFS filesystem and can be accessed via `http:/
 - [PlatformIO Documentation](https://docs.platformio.org/)
 - [SPIFFS Documentation](https://arduino-esp8266.readthedocs.io/en/latest/filesystem.html)
 
-## License
-
-This project uses libraries from various sources. Please refer to the individual library licenses for more information.
-
 ## Credits
 
-This project depends heavily on the excellent utility libraries from [Ayush Sharma](https://github.com/ayushsharma82)
+This project depends heavily on the excellent utility libraries from [Ayush Sharma](https://github.com/ayushsharma82), as well as the lightweight Javascript gauge library from [Bernii](https://bernii.github.io/gauge.js/).

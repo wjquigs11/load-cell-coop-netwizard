@@ -70,10 +70,24 @@ function getReadings(){
       var myObj = JSON.parse(this.responseText);
       console.log(myObj);
       gauge.set(myObj.loadcell);
+      
+      // Update last refresh time if available
+      if (myObj.lastUpdate) {
+        updateLastRefreshDisplay(myObj.lastUpdate);
+      }
     }
-  }; 
+  };
   xhr.open("GET", "/readings", true);
   xhr.send();
+}
+
+// Function to format and display the last refresh time
+function updateLastRefreshDisplay(timestamp) {
+  const refreshElement = document.getElementById('last-refresh');
+  if (refreshElement) {
+    const date = new Date(parseInt(timestamp));
+    refreshElement.textContent = date.toLocaleString();
+  }
 }
 
 // Function to send the browser's local time to the server
@@ -133,5 +147,10 @@ if (!!window.EventSource) {
     lastTime = myObj.time;
     console.log(timeDelta/1000);
     gauge.set(myObj.loadcell);
+    
+    // Update last refresh time if available
+    if (myObj.lastUpdate) {
+      updateLastRefreshDisplay(myObj.lastUpdate);
+    }
   }, false);
 }

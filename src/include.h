@@ -5,7 +5,6 @@
 #if defined(WIFI) || defined(NETWIZARD)
 #include <ArduinoJson.h>
 #include <ESPmDNS.h>
-#include <NTPClient.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 extern AsyncWebServer server;
@@ -23,7 +22,7 @@ String getSensorReadings();
 #endif
 
 #ifdef WEBSERIAL
-#include <WebSerialPro.h>
+#include <WebSerial.h>
 void WebSerialonMessage(uint8_t *data, size_t len);
 #endif
 #ifdef ELEGANTOTA
@@ -51,3 +50,5 @@ void configTare(const String& type);
 extern unsigned long lastTime;
 extern int timerDelay;
 extern int minReadRate;
+// store last update based on clock time from client browser
+extern unsigned long lastUpdate, updateTime;

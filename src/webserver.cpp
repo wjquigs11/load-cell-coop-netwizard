@@ -8,6 +8,7 @@ bool serverStarted;
 JsonDocument readings;
 JsonDocument browserTimeData;
 String host = "coopfeederBETA";
+unsigned long lastUpdate, updateTime;
 
 String getSensorReadings() {
   //readings["sensor"] = "0";
@@ -114,9 +115,8 @@ void startWebServer() {
         log::toAll("Browser time received: " + localTime);
         log::toAll("Browser timezone: " + timezone);
         log::toAll("Browser UTC offset (minutes): " + String(offset));
-        
-        // Store the time data in preferences if needed
-        // preferences.putString("browserTimezone", timezone);
+        updateTime = browserTimeData["timestamp"].as<unsigned long>();
+        //preferences.putString("browserTimezone", timezone);
       } else {
         log::toAll("Error parsing browser time JSON");
       }
