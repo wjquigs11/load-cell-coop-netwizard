@@ -35,6 +35,8 @@ Hanging the feeder in the coop helps to discourage pests (although rats can cert
 - HX711 SCK pin → ESP32 GPIO 14
 - Connect load cell to HX711. [Sparkfun](https://learn.sparkfun.com/tutorials/load-cell-amplifier-hx711-breakout-hookup-guide) has a good guide.
 
+<img src="images/circuit.png" alt="circuit drawing">
+
 ## Installation
 
 1. Clone this repository

@@ -1,66 +1,71 @@
+// Initialize variables
+var lastTime;
+var gauge;
+
 // Get current sensor readings and send browser time when the page loads
 window.addEventListener('load', function() {
   getReadings();
   sendBrowserTime();
-});
-
-// Get container and adjust gauge size 
-var container = document.getElementById('coop-card');
-var size = Math.min(container.offsetWidth * 0.6, 250); 
-var lastTime;
-
-var opts = {
-  fontSize: 35,
-  angle: 0.15, // The span of the gauge arc
-  lineWidth: 0.4, 
-  radiusScale: 0.65, 
-  renderTicks: {
-    divisions: 5,
-    divWidth: 1.1,
-    divLength: 0.7,
-    divColor: '#333333',
-    subDivisions: 3,
-    subLength: 0.5,
-    subWidth: 0.6,
-    subColor: '#666666'
-  },
-  pointer: {
-    length: 0.6, // // Relative to gauge radius
-    strokeWidth: 0.035, // The thickness
-    color: '#000000' // Fill color
-  },
-  limitMax: false,     // If false, max value increases automatically if value > maxValue
-  limitMin: false,     // If true, the min value of the gauge will be fixed
-  colorStart: '#6FADCF',   // Colors
-  colorStop: '#8FC0DA',    // just experiment with them
-  strokeColor: '#E0E0E0',  // to see which ones work best for you
-  generateGradient: true,
-  highDpiSupport: true,     // High resolution support
   
-};
+  // Set up periodic time updates every 30 seconds
+  setInterval(sendBrowserTime, 30000);
+  
+  // Get container and adjust gauge size - moved inside load event
+  var container = document.getElementById('coop-card');
+  var size = Math.min(container.offsetWidth * 0.6, 250);
 
-// Set canvas size dynamically based on container with extra padding
-var target = document.getElementById('gauge-coop'); // your canvas element
+  var opts = {
+    fontSize: 35,
+    angle: 0.15, // The span of the gauge arc
+    lineWidth: 0.4,
+    radiusScale: 0.65,
+    renderTicks: {
+      divisions: 5,
+      divWidth: 1.1,
+      divLength: 0.7,
+      divColor: '#333333',
+      subDivisions: 3,
+      subLength: 0.5,
+      subWidth: 0.6,
+      subColor: '#666666'
+    },
+    pointer: {
+      length: 0.6, // // Relative to gauge radius
+      strokeWidth: 0.035, // The thickness
+      color: '#000000' // Fill color
+    },
+    limitMax: false,     // If false, max value increases automatically if value > maxValue
+    limitMin: false,     // If true, the min value of the gauge will be fixed
+    colorStart: '#6FADC0',   // Colors
+    colorStop: '#a2ede3ff',
+    strokeColor: '#E0E0E0',
+    generateGradient: true,
+    highDpiSupport: true,     // High resolution support
+  };
 
-// Make sure we have a square canvas with plenty of room for the gauge
-var canvasSize = Math.max(size * 1.5, 250);  // Ensure minimum size of 250px
-target.width = canvasSize;
-target.height = canvasSize;
+  // Set canvas size dynamically based on container with extra padding
+  var target = document.getElementById('gauge-coop'); // your canvas element
 
-// Adjust gauge options based on canvas size
-opts.width = canvasSize;
-opts.height = canvasSize;
+  // Make sure we have a square canvas with plenty of room for the gauge
+  var canvasSize = Math.max(size * 1.5, 250);  // Ensure minimum size of 250px
+  target.width = canvasSize;
+  target.height = canvasSize;
 
-// Center the gauge within the canvas
-opts.renderTo = target;
-opts.centerX = canvasSize / 2;
-opts.centerY = canvasSize / 2;
+  // Adjust gauge options based on canvas size
+  opts.width = canvasSize;
+  opts.height = canvasSize;
 
-var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
-gauge.maxValue = 100; // set max gauge value
-gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
-gauge.animationSpeed = 32; // set animation speed (32 is default value)
-//gauge.set(1250); // set actual value
+  // Center the gauge within the canvas
+  opts.renderTo = target;
+  opts.centerX = canvasSize / 2;
+  opts.centerY = canvasSize / 2;
+
+  gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+  gauge.maxValue = 100; // set max gauge value
+  gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+  gauge.animationSpeed = 32; // set animation speed (32 is default value)
+  //gauge.set(1250); // set actual value
+});
 
 // Function to get current readings on the webpage when it loads for the first time
 function getReadings(){
@@ -69,7 +74,19 @@ function getReadings(){
     if (this.readyState == 4 && this.status == 200) {
       var myObj = JSON.parse(this.responseText);
       console.log(myObj);
-      gauge.set(myObj.loadcell);
+      
+      // Only set gauge value if gauge has been initialized
+      if (gauge) {
+        gauge.set(myObj.loadcell);
+      }
+      
+      // Display loadcell value
+      document.getElementById('feed').textContent = myObj.loadcell;
+      
+      // Update units if available
+      if (myObj.units) {
+        document.getElementById('units').textContent = myObj.units;
+      }
       
       // Update last refresh time if available
       if (myObj.lastUpdate) {
@@ -85,8 +102,28 @@ function getReadings(){
 function updateLastRefreshDisplay(timestamp) {
   const refreshElement = document.getElementById('last-refresh');
   if (refreshElement) {
-    const date = new Date(parseInt(timestamp));
-    refreshElement.textContent = date.toLocaleString();
+    // Ensure timestamp is treated as a number
+    const timestampNum = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
+    
+    // Check if the timestamp is a reasonable Unix timestamp (at least from year 2020)
+    // Unix timestamp for Jan 1, 2020 is 1577836800000 milliseconds
+    if (timestampNum < 1577836800000 && timestampNum > 0) {
+      // If it's a small number, it's likely just milliseconds since ESP32 boot
+      // Use current browser time instead
+      refreshElement.textContent = new Date().toLocaleString();
+      console.log("Small timestamp detected, using current browser time instead:", timestampNum);
+    } else {
+      // It's a proper Unix timestamp, use it
+      const date = new Date(timestampNum);
+      
+      // Check if date is valid before displaying
+      if (!isNaN(date.getTime())) {
+        refreshElement.textContent = date.toLocaleString();
+      } else {
+        console.error("Invalid timestamp received:", timestamp);
+        refreshElement.textContent = "Unknown";
+      }
+    }
   }
 }
 
@@ -97,12 +134,14 @@ function sendBrowserTime() {
   
   // Format the time data
   const timeData = {
-    timestamp: now.getTime(),
+    timestamp: now.getTime(), // This is milliseconds since epoch (Unix timestamp)
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     offset: now.getTimezoneOffset(),
     localTime: now.toLocaleString(),
     isoString: now.toISOString()
   };
+  
+  console.log("Sending browser time to server:", timeData);
   
   // Send the time data to the server
   var xhr = new XMLHttpRequest();
@@ -146,7 +185,19 @@ if (!!window.EventSource) {
     var timeDelta = myObj.time - lastTime;
     lastTime = myObj.time;
     console.log(timeDelta/1000);
-    gauge.set(myObj.loadcell);
+    
+    // Only set gauge value if gauge has been initialized
+    if (gauge) {
+      gauge.set(myObj.loadcell);
+    }
+    
+    // Display loadcell value
+    document.getElementById('feed').textContent = myObj.loadcell;
+    
+    // Update units if available
+    if (myObj.units) {
+      document.getElementById('units').textContent = myObj.units;
+    }
     
     // Update last refresh time if available
     if (myObj.lastUpdate) {

@@ -99,6 +99,40 @@ canvas {
   text-align: center;
 }
 
+/* Calibration buttons styling */
+.calibration-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.calibration-button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.calibration-button:hover {
+  background-color: #45a049;
+}
+
+.calibration-button:active {
+  background-color: #3e8e41;
+}
+
+.calibration-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
 /* Container for the gauge to ensure proper sizing and prevent cutoff */
 .gauge-container {
   width: 100%;
