@@ -1,1 +1,0 @@
-../src.local/logto.cpp
