@@ -1,6 +1,9 @@
 #ifdef WEBSERIAL
 #include "include.h"
 
+#define PRBUF 128
+char prbuf[PRBUF];
+
 String formatMacAddress(const String& macAddress) {
   String result = "{";
   int len = macAddress.length();
@@ -95,9 +98,10 @@ void WebSerialonMessage(uint8_t *data, size_t len) {
     if (words[i].equals("status")) {
       String buf = "";
       unsigned long uptime = millis() / 1000;
-      log::toAll("uptime: " + String(uptime));
+      log::toAll("      uptime: " + String(uptime));
+      log::toAll(" current raw: " + String(LoadCell.read()));
       log::toAll("empty offset: " + String(empty_offset));
-      log::toAll("full offset: " + String(full_raw));
+      log::toAll(" full offset: " + String(full_raw));
       buf = String();
       return;
     }
@@ -139,11 +143,8 @@ void WebSerialonMessage(uint8_t *data, size_t len) {
     if (words[i].startsWith("empty")) {
       if (wordCount > 1) {
         if (!words[++i].equals("?")) {
-          long l;
-          if ((l = atol(words[i].c_str())) > 0) {
-            empty_offset = l;
-            preferences.putLong("empty_offset", empty_offset);
-          }
+          empty_offset = atol(words[i].c_str());
+          preferences.putLong("empty_offset", empty_offset);
         }
         log::toAll("empty calibration = " + String(empty_offset));
       } else {

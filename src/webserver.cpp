@@ -8,27 +8,7 @@ bool serverStarted = false;
 JsonDocument readings;
 JsonDocument browserTimeData;
 String host = "coopfeederBETA";
-time_t lastUpdate, updateTime;
-int wsClientCount = 0;
-int esClientCount = 0;
-
-// Function to check if any web clients are connected
-bool hasAnyWebClients() {
-  // Check WebSocket clients
-  if (wsClientCount > 0) {
-    return true;
-  }
-  
-  // Check EventSource clients
-  if (esClientCount > 0) {
-    return true;
-  }
-  
-  // WebSerial clients can't be directly checked with the current API
-  // but we can assume they're connected if they're sending messages
-  
-  return false;
-}
+unsigned long lastUpdate, updateTime;
 
 String getSensorReadings() {
   //readings["sensor"] = "0";
@@ -164,39 +144,14 @@ void startWebServer() {
     }
   });
 
-  // Set up EventSource connection handler
   events.onConnect([](AsyncEventSourceClient *client){
-    esClientCount++;
     if(client->lastId()){
-      log::toAll("EventSource client reconnected! Last message ID: " + String(client->lastId()));
-    } else {
-      log::toAll("New EventSource client connected. Total clients: " + String(esClientCount));
+      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
     }
     // send event with message "hello!", id current millis
     // and set reconnect delay to 1 second
     client->send("hello!", NULL, millis(), 1000);
   });
-  
-  // Set up WebSocket event handler
-  ws.onEvent([](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-    switch (type) {
-      case WS_EVT_CONNECT:
-        wsClientCount++;
-        log::toAll("WebSocket client connected. IP: " + client->remoteIP().toString() + ", ID: " + String(client->id()) + ". Total clients: " + String(wsClientCount));
-        break;
-      case WS_EVT_DISCONNECT:
-        wsClientCount--;
-        log::toAll("WebSocket client disconnected. ID: " + String(client->id()) + ". Remaining clients: " + String(wsClientCount));
-        break;
-      case WS_EVT_ERROR:
-        log::toAll("WebSocket error: client ID " + String(client->id()));
-        break;
-      case WS_EVT_DATA:
-        // Handle data if needed
-        break;
-    }
-  });
-  
   server.addHandler(&events);
   server.addHandler(&ws);
   

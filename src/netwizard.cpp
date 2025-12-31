@@ -1,7 +1,12 @@
 
 #ifdef NETWIZARD
-#ifndef WIFI
 #include "include.h"
+
+#if defined(ESP32)
+//  #include <AsyncTCP.h>
+#elif defined(TARGET_RP2040) || defined(TARGET_RP2350) || defined(PICO_RP2040) || defined(PICO_RP2350)
+  #include <RPAsyncTCP.h>
+#endif
 
 // Initialize NetWizard
 NetWizard NW(&server);
@@ -130,5 +135,4 @@ void resetWifi() {
   // Restart the ESP32
   //ESP.restart();
 }
-#endif
 #endif

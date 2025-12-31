@@ -131,7 +131,8 @@ function updateLastRefreshDisplay(timestamp) {
 function sendBrowserTime() {
   // Get current browser time
   const now = new Date();
-  
+  console.log(now.getTime(), now.toLocaleString(), now.toISOString());
+
   // Format the time data
   const timeData = {
     timestamp: now.getTime(), // This is milliseconds since epoch (Unix timestamp)
